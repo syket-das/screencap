@@ -10,10 +10,13 @@ const App = () => {
     const selectionRef = useRef(null)
 
     useEffect(() => {
-        // Fetch initial screenshots from storage
         chrome.storage.local.get(['screenshots'], result => {
             setScreenshots(result.screenshots || [])
         })
+    }, [chrome.storage.local.get(['screenshots'])])
+
+    useEffect(() => {
+        // Fetch initial screenshots from storage
 
         // Listen for messages to start screenshot mode
         chrome.runtime.onMessage.addListener(request => {
@@ -80,7 +83,7 @@ const App = () => {
                 const newSelectionBox = document.createElement('div')
                 newSelectionBox.id = 'selection-box'
                 newSelectionBox.style.position = 'absolute'
-                newSelectionBox.style.border = '1px solid red'
+                newSelectionBox.style.border = '1px solid green'
                 newSelectionBox.style.pointerEvents = 'none'
                 document.body.appendChild(newSelectionBox)
             }
@@ -120,19 +123,26 @@ const App = () => {
                     endY
                 )
 
-                const newScreenshot = {
-                    id: new Date().getTime(),
-                    name: `${new Date().toLocaleString()}`,
-                    url: croppedImage
-                }
+                chrome.runtime.sendMessage({ command: 'getActiveTab' }, response => {
+                    if (response && response.tab) {
+                        const newScreenshot = {
+                            id: new Date().getTime(),
+                            name: `${new Date().toLocaleString()}`,
+                            url: croppedImage,
+                            tabId: response.tab.id,
+                            tabUrl: response.tab.url,
+                            float: false,
+                            minimize: false
+                        }
+                        setScreenshots(prevScreenshots => [...prevScreenshots, newScreenshot])
+                        // Update state and storage with new screenshot
 
-                // Update state and storage with new screenshot
-                setScreenshots(prevScreenshots => [...prevScreenshots, newScreenshot])
-
-                chrome.storage.local.get(['screenshots'], result => {
-                    const screenshots = result.screenshots || []
-                    screenshots.push(newScreenshot)
-                    chrome.storage.local.set({ screenshots })
+                        chrome.storage.local.get(['screenshots'], result => {
+                            const screenshots = result.screenshots || []
+                            screenshots.push(newScreenshot)
+                            chrome.storage.local.set({ screenshots })
+                        })
+                    }
                 })
             } catch (error) {
                 console.error('Error capturing and cropping the selected area:', error)
@@ -148,10 +158,15 @@ const App = () => {
     }
 
     const onUpdateScreenshot = useCallback(
-        (id, newName) => {
+        (id, data) => {
             const updatedScreenshots = screenshots.map(screenshot => {
                 if (screenshot.id === id) {
-                    return { ...screenshot, name: newName }
+                    return {
+                        ...screenshot,
+                        name: data.name || screenshot.name,
+                        float: data.float ? true : false,
+                        minimize: data.minimize ? true : false
+                    }
                 }
                 return screenshot
             })
@@ -190,9 +205,9 @@ const App = () => {
                         left: '0',
                         width: '100%',
                         height: '100%',
-                        background: 'rgba(0, 0, 0, 0.2)',
                         pointerEvents: 'none',
-                        zIndex: '9999'
+                        zIndex: '9999',
+                        backgroundColor: 'rgba(0, 0, 0, 0.1)'
                     }}
                 />
             )}

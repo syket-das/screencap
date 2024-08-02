@@ -41,6 +41,13 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         })
         return true // To indicate that the response will be sent asynchronously
     }
+
+    if (request.action === 'getActiveTab') {
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            sendResponse({ tab: tabs[0] })
+        })
+        return true
+    }
 })
 
 // sends action startScreenshotMode when pressing keybind defined in manifest.hson
@@ -53,4 +60,11 @@ chrome.commands.onCommand.addListener(function (command) {
     }
 })
 
-export {}
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.command === 'getActiveTab') {
+        chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+            sendResponse({ tab: tabs[0] })
+        })
+        return true // To indicate that the response will be sent asynchronously
+    }
+})
