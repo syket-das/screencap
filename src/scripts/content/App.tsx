@@ -85,6 +85,7 @@ const App = () => {
                 newSelectionBox.style.position = 'absolute'
                 newSelectionBox.style.border = '1px solid green'
                 newSelectionBox.style.pointerEvents = 'none'
+                newSelectionBox.style.zIndex = '100000'
                 document.body.appendChild(newSelectionBox)
             }
             const width = Math.abs(endX - startX)
@@ -206,7 +207,7 @@ const App = () => {
                         width: '100%',
                         height: '100%',
                         pointerEvents: 'none',
-                        zIndex: '9999',
+                        zIndex: '10000',
                         backgroundColor: 'rgba(0, 0, 0, 0.1)'
                     }}
                 />

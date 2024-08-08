@@ -92,7 +92,7 @@ const overlayStyles: CSSProperties = {
     height: '100%',
     background: 'rgba(0, 0, 0, 0.1)',
     pointerEvents: 'none',
-    zIndex: '9999',
+    zIndex: '10000',
     cursor: 'crosshair'
 }
 
